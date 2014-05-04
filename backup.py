@@ -59,7 +59,7 @@ class Backup(object):
                           % filename)
     rows = cur.fetchall()
     if len(rows) == 0:
-      self.db.execute('INSERT INTO files VALUES ("%s", "", %d)'
+      self.db.execute('INSERT INTO files VALUES ("%s", "", %d, 0)'
                       % (filename, int(time.time())))
       state = 'new'
     else:
@@ -80,7 +80,7 @@ class Backup(object):
                                 % (int(time.time()), filename))
           state = 'seen'
           if res.rowcount == 0:
-            self.db.execute('INSERT INTO files VALUES ("%s", "", %d)'
+            self.db.execute('INSERT INTO files VALUES ("%s", "", %d, 0)'
                             % (filename, int(time.time())))
             state = 'newer'
     return state
