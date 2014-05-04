@@ -14,7 +14,7 @@ _TBL_FIELDS = {
     'disks': ('id', 'label')
     }
 
-def chunks(filename):
+def makeChunks(filename):
   chunklen = 64 * 1024 * 1024
   f = open(filename, 'r')
   m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
@@ -40,7 +40,7 @@ class Backup(object):
         cur = c.execute(('CREATE TABLE %s ("' % table)
                          + '", "'.join(_TBL_FIELDS[table]) + '")')
 
-  def add_file(self, filename):
+  def addFile(self, filename):
     c = self.db.cursor()
     cur = c.execute('SELECT name, chunks FROM files WHERE name = "%s"'
                     % filename)
@@ -50,7 +50,7 @@ class Backup(object):
           % (filename, int(time.time())))
     else:
       found = False
-      chunks = ','.chunks(filename)
+      chunks = ','.join(makeChunks(filename))
       res = c.execute('''UPDATE files SET lastseen = %d
                                 WHERE name = "%s" AND chunks = "%s"'''
                       % (int(time.time()), filename, ','.join(chunks)))
