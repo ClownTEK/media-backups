@@ -2,6 +2,7 @@
 
 import backup
 import os
+import sys
 
 EXCLUDE_DIRS = ('.AppleDouble', '.svn')
 EXCLUDE_FILES = ('._.DS_Store', '.DS_Store')
@@ -13,5 +14,7 @@ for root_dir in root_dirs:
     subdirs[:] = [d for d in subdirs if d not in EXCLUDE_DIRS]
     files[:] = [f for f in files if f not in EXCLUDE_FILES]
     for fname in files:
-      print('%s' % os.path.join(dir_name, fname))
-      bkup.addFile(fname)
+      state = bkup.addFile(os.path.join(dir_name, fname))
+      sys.stdout.write(backup.STATE_CHAR[state])
+      sys.stdout.flush()
+sys.stdout.write('\n')
