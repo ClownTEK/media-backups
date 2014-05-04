@@ -5,6 +5,8 @@ import mmap
 import time
 import hashlib
 import os
+import sys
+import base64
 
 _TABLES = {
     'files': ('name', 'chunks', 'lastseen'),
@@ -25,6 +27,9 @@ STATE_CHAR = {
     }
 CHUNK = 64 * 1024 * 1024
 
+def encodeDigest(hasher):
+  return base64.b64encode(hasher.digest(), '_@')[:-1]
+
 def makeChunks(filename):
   f = open(filename, 'r')
   m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
@@ -33,7 +38,7 @@ def makeChunks(filename):
   while offset < len(m):
     h = hashlib.sha1()
     h.update(m[offset : min(offset + CHUNK, len(m))])
-    chunks.append(h.hexdigest())
+    chunks.append(encodeDigest(h))
     offset += CHUNK
   return chunks
 
@@ -68,14 +73,13 @@ class Disks(object):
           smallest_size = free
           smallest_disk = disk_id
     if smallest_size != -1:
-      return disk_id
+      return smallest_disk
     else:
       raise OutOfSpace('Backup disks full.')
 
-  def storeChunk(self, digest, chunk, size):
+  def storeNewChunk(self, digest, chunk, size):
     disk_id = self.smallestDisk(size)
-    cur = self.db.execute('SELECT * FROM chunks WHERE chunk="%s" AND disk=%d'
-                          % (digest, disk_id))
+    cur = self.db.execute('SELECT * FROM chunks WHERE chunk="%s"' % digest)
     if len(cur.fetchall()) == 0:
       label = self.disks[disk_id][0]
       chunk_dir = '/mnt/b/%s/%s' % (label, digest[0:2])
@@ -154,9 +158,10 @@ class Backup(object):
             h = hashlib.sha1()
             extent = min(offset + CHUNK, len(m))
             h.update(m[offset : extent])
-            digest = h.hexdigest()
+            digest = encodeDigest(h)
             chunks.append(digest)
-            self.disks.storeChunk(digest, m[offset : extent], extent - offset)
+            self.disks.storeNewChunk(digest, m[offset : extent],
+                                     extent - offset)
             offset += CHUNK
           res = self.db.execute('''UPDATE files SET lastseen=%d, chunks="%s"
                                     WHERE name = "%s" AND chunks = ""'''
