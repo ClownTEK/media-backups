@@ -60,7 +60,7 @@ class Disks(object):
     smallest_size = -1
     for disk_id in self.disks.keys():
       s = os.statvfs('/mnt/b/%s/LABEL' % self.disks[disk_id][0])
-      free = s.frsize * s.f_bavail
+      free = s.f_frsize * s.f_bavail
       if free < size_needed:
         continue
       else:
@@ -124,7 +124,7 @@ class Backup(object):
         chunks = ','.join(makeChunks(filename))
         res = self.db.execute('''UPDATE files SET lastseen = %d
                                   WHERE name = "%s" AND chunks = "%s"'''
-                        % (int(time.time()), filename, ','.join(chunks)))
+                        % (int(time.time()), filename, chunks))
         state = 'backed up'
         if res.rowcount == 0:
           res = self.db.execute('''UPDATE files SET lastseen = %d
@@ -156,8 +156,10 @@ class Backup(object):
             h.update(m[offset : extent])
             digest = h.hexdigest()
             chunks.append(digest)
-            self.disk.storeChunk(m[offset : extent], extent - offset)
+            self.disks.storeChunk(digest, m[offset : extent], extent - offset)
             offset += CHUNK
-          return chunks
+          res = self.db.execute('''UPDATE files SET lastseen=%d, chunks="%s"
+                                    WHERE name = "%s" AND chunks = ""'''
+                        % (int(time.time()), ','.join(chunks), row[0]))
         except IOError:
           self.db.execute('DELETE FROM files WHERE name="%s" AND chunks=""')

@@ -51,3 +51,5 @@ These tools manage backup disk lifecycles:
   * Chunk distribution - currently do the initial backups of a chunk to
     a single disk.  Need to add to that and distribute chunks till a
     confidence level of 6 is reached.
+  * Get file backup working...  currently broken trying to find the
+    smallest disk.
