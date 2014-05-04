@@ -10,6 +10,7 @@ test -f /sbin/cryptsetup || die "Please install cryptsetup."
 dev=$1
 id=$2
 confidence=$3
+user=$(whoami)
 
 test -n "$dev" || die "Must specify a device."
 test -b $dev || die "Can't find '$dev'."
@@ -28,7 +29,7 @@ echo "insert into disks values ($id, 'backup$id', $confidence);" \
 sudo cryptsetup -v -y luksFormat $dev
 sudo cryptsetup luksOpen $dev backup$id
 test -e /dev/mapper/backup$id || die "Failed to open /dev/mapper/backup$id."
-sudo mkfs.ext4 -i $bytes_per_inode /dev/mapper/backup$id
+sudo mkfs.ext4 -m 0 -i $bytes_per_inode /dev/mapper/backup$id
 test -d /mnt/b/backup$id \
   || sudo mkdir /mnt/b/backup$id
 test $(stat --printf "%m" /mnt/b/backup$id) = / \
@@ -38,5 +39,6 @@ sudo mount /dev/mapper/backup$id /mnt/b/backup$id
 test $(stat --printf "%m" /mnt/b/backup$id) = / \
   && die "/mnt/b/backup$id wasn't mounted correctly."
 echo backup$id | sudo tee /mnt/b/backup$id/LABEL > /dev/null
+sudo chown -R ${user}:$user /mnt/b/backup$id
 sudo umount /dev/mapper/backup$id
 sudo cryptsetup luksClose backup$id
