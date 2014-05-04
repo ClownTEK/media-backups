@@ -6,14 +6,15 @@ import time
 import hashlib
 
 _TABLES = {
-    'files': ('name', 'chunks', 'lastseen'),
+    'files': ('name', 'chunks', 'lastseen', 'confidence'),
     'chunks': ('chunk', 'disks'),
-    'disks': ('id', 'label')
+    'disks': ('id', 'label', 'confidence')
     }
 _INDEXES = {
     'files1': 'create unique index files1 on files (name, chunks)',
     'files2': 'create index files2 on files (lastseen)',
     'chunks1': 'create unique index chunks1 on chunks (chunk)',
+    'disks1': 'create unique index disks1 on disks (id)',
     }
 STATE_CHAR = {
     'new': '+',
