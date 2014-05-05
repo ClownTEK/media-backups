@@ -57,3 +57,7 @@ These tools manage backup disk lifecycles:
   * Database access is really limited.  How does one make sqlite db
     access less exclusive?
   * Should store file meta info to limit need to recalc sha1 sums.
+  * Some way to request disks be removed while backup-files.py is
+    running.
+  * Store chunk size info.
+  * Store disk size info.
