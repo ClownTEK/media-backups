@@ -150,6 +150,10 @@ class Backup(object):
         break
       for row in rows:
         try:
+          # Don't backup empty files. TODO: mark this in files table?
+          s = os.stat(row[0])
+          if s.st_size == 0:
+            continue
           f = open(row[0], 'r')
           m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
           chunks = []
