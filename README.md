@@ -51,5 +51,9 @@ These tools manage backup disk lifecycles:
   * Chunk distribution - currently do the initial backups of a chunk to
     a single disk.  Need to add to that and distribute chunks till a
     confidence level of 6 is reached.
-  * Get file backup working...  currently broken trying to find the
-    smallest disk.
+  * Compression?
+  * An fsck for backup disks.  Confirm checksums (filenames) match
+    file contents.
+  * Database access is really limited.  How does one make sqlite db
+    access less exclusive?
+  * Should store file meta info to limit need to recalc sha1 sums.
